@@ -1,8 +1,12 @@
 from googlefinance import getQuotes
-from googlefinance import getQuotesF
 from googlefinance import getNews
 
 import json
 
-print json.dumps(getQuotesF('GOOG','ChangePercent'), indent=2)
-#print json.dumps(getNews("GOOG"), indent=2)
+#no filter
+print json.dumps(getQuotes('GOOG'), indent=2)
+print json.dumps(getNews("GOOG"), indent=2)
+#filter
+print json.dumps(getQuotes('GOOG','ChangePercent,Yield'), indent=2)
+print json.dumps(getNews('GOOG','URL'), indent=2)
+

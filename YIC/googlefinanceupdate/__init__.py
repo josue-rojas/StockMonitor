@@ -4,13 +4,14 @@ import demjson
 
 """
 this is my updated version of googlefinance 0.7 api https://github.com/hongtaocai/googlefinance
-i added names for json news request i cannot join them with the others cause there is overlap on keys. 
+i added 
+- names for json news request i cannot join them with the others cause there is overlap on keys.
+- filter to get specific things from keys 
+
 
 Things to add
 -------------
 - make another method to get a desire amount of results for news. 
-- make methods to just get urls 
-- or make method to just return what ever you want
 - maybe join the url method (it might make it unclear to people but i dont like seeing to many methods that do the same)
 """
 try:
@@ -61,7 +62,7 @@ def buildUrl(symbols):
     return 'https://finance.google.com/finance/info?client=ig&q=' \
         + symbol_list
 
-def buildNewsUrl(symbol, qs='&start=0&num=1000'):
+def buildNewsUrl(symbol, qs='&start=0&num=1'):
    return 'https://www.google.com/finance/company_news?output=json&q=' \
         + symbol + qs
 
@@ -94,7 +95,7 @@ def requestNews(symbol):
 
     return article_json
 
-def replaceKeys(quotes, isNews):
+def replaceKeys(quotes, isNews=False):
     keys = googleFinanceKeyToFullName if not isNews else googleFinanceNewsKeyToFullName
     quotesWithReadableKey = []
     for q in quotes:
@@ -106,10 +107,11 @@ def replaceKeys(quotes, isNews):
     return quotesWithReadableKey
     
 
-def getQuotesF(symbols, key):
+#filters for keys you want
+def keyFilter(data,key):
 	key = key.split(',')
 	useful = []
-	all = getQuotes(symbols)
+	all = data
 	for q in all:
 		filter = {}
 		for k in key:
@@ -119,7 +121,7 @@ def getQuotesF(symbols, key):
 	return useful
 	
 
-def getQuotes(symbols):
+def getQuotes(symbols,key=None):
     '''
     get real-time quotes (index, last trade price, last trade time, etc) for stocks, using google api: http://finance.google.com/finance/info?client=ig&q=symbols
 
@@ -140,12 +142,19 @@ def getQuotes(symbols):
     if type(symbols) == type('str'):
         symbols = [symbols]
     content = json.loads(request(symbols))
-    return replaceKeys(content,False);
-    #return content;
+    returnInfo = replaceKeys(content)
+    if key is not None: #change the return if there are any filter keys
+    	returnInfo = keyFilter(returnInfo,key)
+    	
+    return returnInfo;
 
-def getNews(symbol):
+def getNews(symbol,keys=None):
 	#return requestNews(symbol);
-    return replaceKeys(requestNews(symbol),True);
+	returnInfo = replaceKeys(requestNews(symbol),True)
+	if keys is not None:
+		returnInfo = keyFilter(returnInfo,keys)
+		
+	return returnInfo;
 
 if __name__ == '__main__':
     try:
