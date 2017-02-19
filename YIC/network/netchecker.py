@@ -27,7 +27,7 @@ def check_connection(net_address, timeout=1): #default of 1 second is more then 
         print('Reason: ' + str(e.code))
         return(0)
     except Exception:
-        print('Connection to ' + ((str)(site[0])) + ' FAILED')
+        print('Connection to ' + ((str)(net_address[0])) + ' FAILED')
         print('Reason: UNKNOWN ERROR')
         return(0)
     else :
