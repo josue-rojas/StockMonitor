@@ -24,7 +24,7 @@ class g_tick_data():
         self.tick_info = (googlefinance.getQuotes(ticker))[0]
 
     def refresh(self):
-        __init__(self.ticker) 
+        self.__init__(self.ticker) 
       
     def get_id(self):
         return (self.tick_info["ID"])
