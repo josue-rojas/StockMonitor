@@ -31,9 +31,6 @@ ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 log_date = '.'.join((str(datetime.datetime.now()).split(':'))[:-1])
 log = open(log_date + '_LOG.txt', 'w')
 
-#global time reference is necessary
-epoch_ref = time.time()
-
 #ticker data periodic callback
 def ticker_periodic_callback(ticker, offset, p_last_time):
     last_time = p_last_time
@@ -60,7 +57,7 @@ if (google_conn and yic_conn):
     #tickers to be pulled
     AAPL = wrapper_scraper.g_tick_data('AAPL')
     
-    ticker_periodic_callback(AAPL, 1, epoch_ref)
+    ticker_periodic_callback(AAPL, 1, time.time())
 
     print('System initialization complete...')
     print('Running...')
