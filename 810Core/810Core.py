@@ -45,11 +45,16 @@ def ticker_periodic_callback(ticker, offset, p_last_time):
     last_time = last_time + offset #Add 1 second to the reference time for next run    
     ticker_thread = threading.Timer(last_time - time.time(), ticker_periodic_callback, [ticker, offset, last_time])
     ticker_thread.start()
-
+    
+def loading(s=10):
+    print "System initializing",
+    for i in range(s):
+        print".",
+        sleep(1)
 
 #use time.sleep() ONLY on initialization to help make times between callbacks more consistent
 #offsets must be the same for all callbacks to have good spacing
-print('System initialization begin...')
+loading(s=5)
 google_conn = network.check_connection('http://google.com/')
 yic_conn = network.check_connection('http://yic.com/')
 
