@@ -35,8 +35,8 @@ log = open(log_date + '_LOG.txt', 'w')
 epoch_ref = time.time()
 
 #ticker data periodic callback
-def ticker_periodic_callback(ticker, offset):
-    global epoch_ref
+def ticker_periodic_callback(ticker, offset, p_last_time):
+    last_time = p_last_time
     try:
         ticker.refresh()
         price = ticker.get_price()
@@ -45,8 +45,8 @@ def ticker_periodic_callback(ticker, offset):
     except:
         log.write('Exception   -   Sys time: ' + str(datetime.datetime.now()) + '\n')
 
-    epoch_ref = epoch_ref + offset #Add 1 second to the reference time for next run    
-    ticker_thread = threading.Timer(epoch_ref - time.time(), ticker_periodic_callback, [ticker, offset])
+    last_time = last_time + offset #Add 1 second to the reference time for next run    
+    ticker_thread = threading.Timer(last_time - time.time(), ticker_periodic_callback, [ticker, offset, last_time])
     ticker_thread.start()
 
 
@@ -59,14 +59,9 @@ yic_conn = network.check_connection('http://yic.com/')
 if (google_conn and yic_conn):
     #tickers to be pulled
     AAPL = wrapper_scraper.g_tick_data('AAPL')
-    GOOG = wrapper_scraper.g_tick_data('GOOG')
-    AMD = wrapper_scraper.g_tick_data('AMD')
+    
+    ticker_periodic_callback(AAPL, 1, epoch_ref)
 
-    ticker_periodic_callback(AAPL, 1)
-    time.sleep(1)
-    ticker_periodic_callback(GOOG, 1)
-    time.sleep(1)
-    ticker_periodic_callback(AMD, 1)
     print('System initialization complete...')
     print('Running...')
 else:
