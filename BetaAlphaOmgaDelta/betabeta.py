@@ -10,7 +10,7 @@ NOTES
 - Need to think of how to implement linear regression slope
     - should probably save all quotes and handle it there
         - this means saving for each symbol it's own file
-        - 
+- should change printQuotes to logQuotes to save them. we do not need to print the prices, just results
 """
 
 #useless stuff
@@ -84,7 +84,7 @@ def printQuotes(symbols=allSymbols):
         sPrice = symbol[price]
         sTime = symbol[time]
         #should write to log
-        if((lTime[hour]) > 16 or (lTime[hour] < 9 and lTime[minu] < 30)):  #after market price and premarket use the same key
+        if((lTime[hour]) >= 16 or (lTime[hour] < 9 and lTime[minu] < 30)):  #after market price and premarket use the same key
             sPrice =  symbol[exPrice] 
             sTime = symbol[exTime]
 
