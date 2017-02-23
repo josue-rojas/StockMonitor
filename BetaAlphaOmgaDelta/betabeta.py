@@ -19,8 +19,8 @@ stockS = 'StockSymbol'
 time = 'LastTradeTime'
 exPrice = 'ExtHrsLastTradePrice'
 exTime = 'ExtHrsLastTradeDateTimeLong'
-allSymbols = 'GOOG,AAPL,NVDA,UCTT'.split(',')
-#time index
+allSymbols = 'GOOG,AAPL,NVDA,UCTT,NERV,DRYS'.split(',')
+#index of the time hour, minute, and seconds
 hour = 3
 min = 4
 sec = 5
@@ -78,18 +78,16 @@ def linearRegression(x, y, xSq, xy, N):
 def printQuotes(symbols=allSymbols):
   #  time = datetime.now() #time is checked outside cause all quotes are checked at the same time
     print 'Current Time ', datetime.now()
-    lTime = localtime()
+    lTime = localtime() 
     print ("%s\t%s\t%s")% ("Symbol","Price","Last Time") #mkae it look nice for people who do not know what is happening *not necessary 
     for symbol in getQuotes(symbols):
         sPrice = symbol[price]
         sTime = symbol[time]
         #should write to log
-        if((lTime[hour]) > 16):  #after market price
+        if((lTime[hour]) > 16 or (lTime[hour] < 9 and lTime[min] < 30)):  #after market price and premarket use the same key
             sPrice =  symbol[exPrice] 
             sTime = symbol[exTime]
-        elif (lTime[hour] < 9 and lTime[min] < 30): #pre market
-            #premarket data
-            print "NEED TO FIX TO GET THIS"
+
         print("%s\t%s\t%s")%(symbol[stockS],sPrice,sTime)
     print
     t = threading.Timer(1,printQuotes)
