@@ -22,7 +22,7 @@ exTime = 'ExtHrsLastTradeDateTimeLong'
 allSymbols = 'GOOG,AAPL,NVDA,UCTT,NERV,DRYS'.split(',')
 #index of the time hour, minute, and seconds
 hour = 3
-min = 4
+minu = 4
 sec = 5
 
 
@@ -84,7 +84,7 @@ def printQuotes(symbols=allSymbols):
         sPrice = symbol[price]
         sTime = symbol[time]
         #should write to log
-        if((lTime[hour]) > 16 or (lTime[hour] < 9 and lTime[min] < 30)):  #after market price and premarket use the same key
+        if((lTime[hour]) > 16 or (lTime[hour] < 9 and lTime[minu] < 30)):  #after market price and premarket use the same key
             sPrice =  symbol[exPrice] 
             sTime = symbol[exTime]
 
