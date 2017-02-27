@@ -74,21 +74,20 @@ def linearRegression(x, y, xSq, xy, N):
 
 
 
-#infinite loop for stock (not pre market or after market included)
+#infinite loop for stock
 def printQuotes(symbols=allSymbols):
-  #  time = datetime.now() #time is checked outside cause all quotes are checked at the same time
-    print 'Current Time ', datetime.now()
     lTime = localtime() 
-    print ("%s\t%s\t%s")% ("Symbol","Price","Last Time") #mkae it look nice for people who do not know what is happening *not necessary 
+    print ("%s\t%s\t%s")% ("Symbol","Price","Last Time") #make it look nice for people who do not know what is happening *not necessary 
     for symbol in getQuotes(symbols):
         sPrice = symbol[price]
         sTime = symbol[time]
         #should write to log
-        if((lTime[hour]) >= 16 or (lTime[hour] < 9 and lTime[minu] < 30)):  #after market price and premarket use the same key
+        if((lTime[hour]) > 15 or (lTime[hour] < 10 and lTime[minu] < 30)):  #after market price and premarket use the same key
             sPrice =  symbol[exPrice] 
             sTime = symbol[exTime]
 
         print("%s\t%s\t%s")%(symbol[stockS],sPrice,sTime)
+    print 'Current Time ', datetime.now()
     print
     t = threading.Timer(1,printQuotes)
     t.start()
