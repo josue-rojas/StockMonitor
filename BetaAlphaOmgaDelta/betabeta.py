@@ -2,6 +2,7 @@ from googlefinance import getQuotes
 from datetime import datetime
 from time import sleep,localtime
 import threading
+import os
 
 """
 NOTES
@@ -12,6 +13,8 @@ NOTES
         - this means saving for each symbol it's own file
 - should change printQuotes to logQuotes to save them. we do not need to print the prices, just results
 """
+#important stuff before you start
+root = "/Users/josuerojas/Google Drive/StockMonitor/StockMonitor/BetaAlphaOmgaDelta/" #this is the root of the folder where everything in this script is kept, change in windows cause it's different
 
 #useless stuff
 price = 'LastTradePrice'
@@ -82,9 +85,9 @@ def printQuotes(symbols=allSymbols):
         sPrice = symbol[price]
         sTime = symbol[time]
         #should write to log
-        if((lTime[hour]) > 15 or (lTime[hour] < 10 and lTime[minu] < 30)):  #after market price and premarket use the same key
-            sPrice =  symbol[exPrice] 
-            sTime = symbol[exTime]
+        if((lTime[hour]) > 15 or (lTime[hour]*60+lTime[minu]< 570)):  #after market price and premarket use the same key
+           sPrice =  symbol[exPrice]
+           sTime = symbol[exTime]
 
         print("%s\t%s\t%s")%(symbol[stockS],sPrice,sTime)
     print 'Current Time ', datetime.now()
@@ -107,5 +110,15 @@ def loading(s=10):
     print"."
     sleep(1)
 
+#check this first to avoid errors
+#these folders will be used to keep the data tidy
+#NOTE: change the root for your computer
+def checkFiles(symbols=allSymbols):
+    for s in symbols:
+        if not os.path.exists(root+s):
+            print "made folder for: ", s
+            os.mkdir(root+s)
+		
+#checkFiles()
 #loading(3)    
 printQuotes()
