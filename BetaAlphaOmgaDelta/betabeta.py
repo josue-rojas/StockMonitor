@@ -14,7 +14,7 @@ NOTES
 - should change printQuotes to logQuotes to save them. we do not need to print the prices, just results
 """
 #important stuff before you start
-root = "/Users/josuerojas/Google Drive/StockMonitor/StockMonitor/BetaAlphaOmgaDelta/" #this is the root of the folder where everything in this script is kept, change in windows cause it's different
+root = os.getcwd() #this is the root of the folder where everything in this script is kept, change in windows cause it's different
 
 #useless stuff
 price = 'LastTradePrice'
@@ -114,11 +114,12 @@ def loading(s=10):
 #these folders will be used to keep the data tidy
 #NOTE: change the root for your computer
 def checkFiles(symbols=allSymbols):
+    print "current dir: ", root
     for s in symbols:
-        if not os.path.exists(root+s):
+        if not os.path.exists(root+"/"+s):
             print "made folder for: ", s
-            os.mkdir(root+s)
+            os.mkdir(root+"/"+s)
 		
-#checkFiles()
+checkFiles()
 #loading(3)    
-printQuotes()
+#printQuotes()
