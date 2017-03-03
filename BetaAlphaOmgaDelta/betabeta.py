@@ -12,9 +12,11 @@ NOTES
     - should probably save all quotes and handle it there
         - this means saving for each symbol it's own file
 - should change printQuotes to logQuotes to save them. we do not need to print the prices, just results
+NEED
+-to add handle exceptions like http error 500 and 503
 """
 #important stuff before you start
-root = os.getcwd() #this is the root of the folder where everything in this script is kept, change in windows cause it's different
+root = os.getcwd() #change this if you want different folder
 
 #useless stuff
 price = 'LastTradePrice'
@@ -85,10 +87,12 @@ def printQuotes(symbols=allSymbols):
         sPrice = symbol[price]
         sTime = symbol[time]
         #should write to log
-        if((lTime[hour]) > 15 or (lTime[hour]*60+lTime[minu]< 570)):  #after market price and premarket use the same key
-           sPrice =  symbol[exPrice]
-           sTime = symbol[exTime]
-
+        if((lTime[hour] > 15 or lTime[hour]*60+lTime[minu]< 570)
+           and exPrice in symbol):
+            #after market price and premarket use the same key
+            #have to check if extra hour or pre market exist
+                sPrice =  symbol[exPrice]
+                sTime = symbol[exTime]
         print("%s\t%s\t%s")%(symbol[stockS],sPrice,sTime)
     print 'Current Time ', datetime.now()
     print
@@ -120,6 +124,6 @@ def checkFiles(symbols=allSymbols):
             print "made folder for: ", s
             os.mkdir(root+"/"+s)
 		
-checkFiles()
+#checkFiles()
 #loading(3)    
-#printQuotes()
+printQuotes()
