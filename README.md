@@ -15,3 +15,4 @@ Stock Monitor which will be developed and improved to fit our trading style or t
 *Put below the websites that may be useful*
 - [How to get intraday data](https://www.quantshare.com/sa-426-6-ways-to-download-free-intraday-and-tick-data-for-the-us-stock-market)
 - [Fivniz: stock screener](http://finviz.com)
+- [Google Finance Listings and Disclaimer](https://www.google.com/intl/en/googlefinance/disclaimer/)
