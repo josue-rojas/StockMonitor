@@ -10,3 +10,6 @@ Stock Monitor which will be developed and improved to fit our trading style or t
 - Keep track of future events (I.e stock earnings) this will influence or change the probability of a stock rising above or below its average
 - If a price drops significantly check the reason for it. If there is no reason then there might be a quick rise. 
 - Past events may repeat this can be used to develop strategies
+
+###Website 
+*Put below the websites that may be useful*
