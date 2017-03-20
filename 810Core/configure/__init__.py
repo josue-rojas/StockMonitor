@@ -9,16 +9,13 @@ import re
 #------------------------------------------------------------------------------
 # Function for loading in tickers from tickers.yat
 #------------------------------------------------------------------------------
-def load_sector(input_sector):
-    all_flag = False
+def load_sector(input_sector, all_flag=False):
     #open and load ticker file
     ticker_file = open('tickers.yat', 'r')
     file_data = ticker_file.readlines()
     ticker_file.close()
     read_tick = False
-    ticker_list = []
-    if(input_sector == 'ALL'):
-       all_flag = True         
+    ticker_list = []   
     for line in file_data:
         sector = re.search('###(.*?)###', line)
         if(sector and (sector.group(1) == input_sector) and (all_flag is False)):
