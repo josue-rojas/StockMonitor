@@ -1,4 +1,4 @@
-#********************************YIC********************************
+#********************************Y.A.T********************************
 '''
 This module will be used as an intermediate between different 
 web scraping python modules, making this module a YIC proprietary 
@@ -8,7 +8,7 @@ this module. If the percent difference between the same data captured
 from two different sources exceeds [X]% an exception or at the very 
 least a warning must be thrown.(at programmers discretion)
 '''
-#********************************YIC********************************
+#********************************Y.A.T********************************
 import yahoo_finance
 import googlefinance
 import ystockquote
@@ -21,55 +21,43 @@ class g_tick_data():
 
     def __init__(self, ticker):
         self.ticker = ticker
-        self.tick_info = (googlefinance.getQuotes(ticker))[0]
+        self.tick_info = (googlefinance.getQuotes(ticker))
 
     def refresh(self):
         self.__init__(self.ticker) 
       
-    def get_id(self):
-        return (self.tick_info["ID"])
+    def get_id(self, index=0):
+        return (self.tick_info[index]["ID"])
 
-    def get_tick(self):
-        return(self.tick_info["StockSymbol"])
+    def get_tick(self, index=0):
+        return(self.tick_info[index]["StockSymbol"])
         
-    def get_index(self):
-        return(self.tick_info["Index"])
+    def get_index(self, index=0):
+        return(self.tick_info[index]["Index"])
       
-    def get_price(self):
-        return((float)(self.tick_info["LastTradePrice"]))
+    def get_price(self, index=0):
+        return((float)(self.tick_info[index]["LastTradePrice"]))
                 
-    def get_lst_trd_tm(self):
-        return(self.tick_info["LastTradeTime"])  
+    def get_lst_trd_tm(self, index=0):
+        return(self.tick_info[index]["LastTradeTime"])  
         
-    def get_lst_trd_date(self):
-        return(self.tick_info["LastTradeDateTime"])  
-
-    def get_div(self):
-        if len(self.tick_info["Dividend"]) == 0:
-            return(0)#this may be unsafe
-        else:
-            return((float)(self.tick_info["Dividend"]))
-        
-    def get_yld(self):
-        if len(self.tick_info["Yield"]) == 0:
-            return(0)#this may be unsafe
-        else:
-            return((float)(self.tick_info["Yield"]))
+    def get_lst_trd_date(self, index=0):
+        return(self.tick_info[index]["LastTradeDateTime"])
  
-    def get_change(self):
-        return((float)(self.tick_info["Change"]))
+    def get_change(self, index=0):
+        return((float)(self.tick_info[index]["Change"]))
         
-    def get_prct_change(self):
-        return((float)(self.tick_info["ChangePercent"]))        
+    def get_prct_change(self, index=0):
+        return((float)(self.tick_info[index]["ChangePercent"]))        
         
-    def get_aa_price(self):
-        return((float)(self.tick_info["ExtHrsLastTradePrice"]))     
+    def get_aa_price(self, index=0):
+        return((float)(self.tick_info[index]["ExtHrsLastTradePrice"]))     
     
-    def get_aa_lst_trd_tm(self):
-        return(self.tick_info["ExtHrsLastTradeDateTimeLong"])  
+    def get_aa_lst_trd_tm(self, index=0):
+        return(self.tick_info[index]["ExtHrsLastTradeDateTimeLong"])  
 
-    def get_prev_close_price(self):
-        return((float)(self.tick_info["PreviousClosePrice"])) 
+    def get_prev_close_price(self, index=0):
+        return((float)(self.tick_info[index]["PreviousClosePrice"])) 
  
 
 #------------------------------------------------------------------------------

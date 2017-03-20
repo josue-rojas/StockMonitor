@@ -1,0 +1,37 @@
+Instructions:
+Place anywhere in the file (below this paragraph) the ticker(s) that you would like.
+The ticker must be placed between its sector name surrounded by three # signs 
+on either side of the sector name. The Ticker must start with $ and end with !
+Repeated tickers will NOT be read in twice.
+-----------------------------------------------------------------------------------------
+
+###FINANCE###
+$BAC!
+$GS!
+###FINANCE###
+
+###TECH###
+$AAPL!
+$AMD!
+$AMD!
+###TECH###
+
+###BIOTECH###
+$RTTR!
+###BIOTECH###
+
+###TECH###
+$GOOG!
+$FB!
+$AMD!
+$IBM!
+$MSFT!
+$INTC!
+$VZ!
+$CSCO!
+###TECH###
+
+###BIOTECH###
+$MSTX!
+###BIOTECH###
+

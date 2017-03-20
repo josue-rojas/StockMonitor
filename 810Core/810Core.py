@@ -1,70 +1,72 @@
-#********************************YIC********************************
-#
-#
-#
-#********************************YIC********************************
-import                ssl
-from functools import wraps
-import                wrapper_scraper
-import                datetime
-import                threading
-import                time
-import                network
+#********************************Y.A.T********************************
+'''
+The gentle labourer shall no longer suffer!
+Rise up and seize the means of production!
+'''
+#********************************Y.A.T********************************
+import wrapper_scraper
+import datahandler
+import configure
+import threading
+import datetime
+import network
+import logging
+import Queue
+import time
 
 #------------------------------------------------------------------------------
-#Don't know what this[sslwrap(func)] does honestly, but it should hopefully stop the crash resulting in the error:
-#urlopen error [Errno 8] _ssl.c:504: EOF occurred in violation of protocol
-#Source:http://stackoverflow.com/questions/11772847/error-urlopen-error-errno-8-ssl-c504-eof-occurred-in-violation-of-protoco
-#This can be moved to the network module
+# 
 #------------------------------------------------------------------------------
-def sslwrap(func):
-    @wraps(func)
-    def bar(*args, **kw):
-        kw['ssl_version'] = ssl.PROTOCOL_TLSv1
-        return func(*args, **kw)
-    return bar
-    
-ssl.wrap_socket = sslwrap(ssl.wrap_socket)
 
+print('''
+            @@@@@@@@@@@
+                    __\_\__
+         ___________|_____|___________
+          \                         /
+           \  O  O  O  O  O  O  O  /
+^^^^^^^^^^^^\_____________________/^^^^^^^^^^^
 
-#open log file
-log_date = '.'.join((str(datetime.datetime.now()).split(':'))[:-1])
-log = open(log_date + '_LOG.txt', 'w')
+Look at me, I\'m the Captain now
+''')
+
+print('What sector would you like to monitor?')
+print('ex: \'TECH\', \'FINANCE\', \'BIOTECH\', \'ALL\'')
+
+stocks = configure.load_sector(raw_input('>').upper())
+print('\n\nMonitoring: ' + str(stocks).strip('[]') + '\n')    
+
+logging.basicConfig(filename='logs/' + '.'\
+.join((str(datetime.datetime.now())\
+.split(':'))[:-1]) + '_LOG.txt')
 
 #ticker data periodic callback
-def ticker_periodic_callback(ticker, offset, p_last_time):
+def ticker_periodic_callback(ticker, offset, p_last_time, pipeline):
     last_time = p_last_time
     try:
         ticker.refresh()
-        price = ticker.get_price()
-        log.write(ticker.get_tick() + ' ' + str(price) + '   -   Sys Time: ' + str(datetime.datetime.now()) + '\n')
-        print(ticker.get_tick() + ' ' + str(price) + '   -   Sys Time: ' + str(datetime.datetime.now()) + '\n')        
-    except:
-        log.write('Exception   -   Sys time: ' + str(datetime.datetime.now()) + '\n')
-
-    last_time = last_time + offset #Add 1 second to the reference time for next run    
-    ticker_thread = threading.Timer(last_time - time.time(), ticker_periodic_callback, [ticker, offset, last_time])
+        pipeline.put(ticker)
+    except Exception as e:
+        logging.error(str(e) + ' - ' + str(datetime.datetime.now()))
+    last_time = last_time + offset 
+    ticker_thread = threading.Timer(last_time - time.time(), ticker_periodic_callback, [ticker, offset, last_time, pipeline])
     ticker_thread.start()
     
-def loading(s=10):
-    print "System initializing",
-    for i in range(s):
-        print".",
-        sleep(1)
-
-#use time.sleep() ONLY on initialization to help make times between callbacks more consistent
-#offsets must be the same for all callbacks to have good spacing
-loading(s=5)
+print('Checking connection to internet...')
 google_conn = network.check_connection('http://google.com/')
-yic_conn = network.check_connection('http://yic.com/')
 
-if (google_conn and yic_conn):
-    #tickers to be pulled
-    AAPL = wrapper_scraper.g_tick_data('AAPL')
-    
-    ticker_periodic_callback(AAPL, 1, time.time())
-
-    print('System initialization complete...')
+if (google_conn):
+    data_pipeline = Queue.Queue(10)
     print('Running...')
-else:
-    print('System initialization failed...')
+    tickers = wrapper_scraper.g_tick_data(stocks)
+    ticker_periodic_callback(tickers, 2, time.time(), data_pipeline)
+    data_handler = datahandler.datahandler(True)
+    
+    while(1):
+        try:       
+            data_handler.data_converter(data_pipeline.get(True, 10), len(stocks))
+        except Queue.Empty:
+            logging.warning('Pipeline is empty - ' + str(datetime.datetime.now())) 
+        except Exception as e:
+            logging.error(str(e) + ': - ' + str(datetime.datetime.now()))
+            
+            
