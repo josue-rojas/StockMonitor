@@ -28,11 +28,15 @@ print('''
 
 Look at me, I\'m the Captain now
 ''')
-
+stocks = None
 print('What sector would you like to monitor?')
 print('ex: \'TECH\', \'FINANCE\', \'BIOTECH\', \'ALL\'')
+sector = raw_input('>').upper()
+if(sector == 'ALL'):
+    stocks = configure.load_sector(sector, True)
+else:
+    stocks = configure.load_sector(sector)
 
-stocks = configure.load_sector(raw_input('>').upper())
 print('\n\nMonitoring: ' + str(stocks).strip('[]') + '\n')    
 
 logging.basicConfig(filename='logs/' + '.'\
