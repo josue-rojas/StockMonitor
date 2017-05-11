@@ -14,6 +14,7 @@ NOTES
 - should change printQuotes to logQuotes to save them. we do not need to print the prices, just results
 NEED
 -to add handle exceptions like http error 500 and 503
+-need to check time for 9:30 cause not every stock is traded exactly at that time so the api gets the 4:00 data if no one has traded
 """
 #important stuff before you start
 root = os.getcwd() #change this if you want different folder
@@ -81,6 +82,8 @@ def linearRegression(x, y, xSq, xy, N):
 
 #infinite loop for stock
 def printQuotes(symbols=allSymbols):
+    print threading.activeCount()
+    print threading.enumerate()
     lTime = localtime() 
     print ("%s\t%s\t%s")% ("Symbol","Price","Last Time") #make it look nice for people who do not know what is happening *not necessary 
     for symbol in getQuotes(symbols):
