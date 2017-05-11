@@ -9,6 +9,9 @@ Important Stuff:
 TODO OVERALL:
 - ***Change mining to a queue so that way we dont ignore missed stocks when crshed, this means writing it on file
     Also might not use threading since it is linear and not many things happening, unless....
+    - queue still using stack so we need to fix the crashing of to many stacks just restart the stacks
+        since we already should be saving it.
+- test after and pre market
 - fix regex for mineNames to ignore the '.' in the beginning thus ignoring basic index funds
     but not the wieird ones like the chinese ones that are ust numbers just lik their stocks
 - ADD THREADING TO AVOID COLLISION OR MISSING INTERSECTION AND TO ADD DATA THAT
@@ -50,6 +53,7 @@ daySlope1 = 'daySlope1'
 #these are tempory list for testing
 tempNames=[]
 tempCSV = []
+queue = []
 
 
 
@@ -69,6 +73,14 @@ def add(list):
         return 'ADDED: ' + newRow
     return 'NOTHING ADDED'
 
+'''
+To be used for initial start
+Note: will clear previous queue
+TODO: should be a csv rather than a regular txt, need to save index and stock name so [[name,index]] list
+'''
+def initQueue(clear=False):
+    if clear == False:
+        queue = [line.rstrip('\n') for line in open('SavedStateQueue')]
 '''
 Todo: return in a better format
 this method returns a table sorted in whatever column you choose
@@ -96,18 +108,33 @@ def mineNames(seed=['NASDAQ','AAPL']):
         return 'SEED NOT RIGHT LENGTH'
     r = requests.get(url).text
     #look for ticker:" 
-    all = re.findall('(ticker:")([\w|\d|\.|-]*)(:)([\w|\d|\.|-]*)"',r)
-    for a in all:
-        sName = str(a[3])
-        sIndex = str(a[1])
-        if "." not in sName and sName not in tempNames:
-                time.sleep(1)
-                HL52 = get52HL(sName,0)
-                newEntry = [sName,sIndex,getPrice(sName,0),HL52[0],HL52[1]]
-                tempNames.append(sName)
-                tempCSV.append(newEntry)
-                print tempCSV
-                mineNames([sIndex,sName])
+    allRStocks = re.findall('(ticker:")([\w|\d|\.|-]*)(:)([\w|\d|-|.]*)"',r)
+    queue.extend([str(line[3]), str(line[1])] for line in allRStocks if 'INDEX' not in str(line[1])
+                 and str(line[3]) not in tempNames
+                 and [str(line[3]), str(line[1])] not in queue) #nee to change tempNames to seen
+    print queue
+    print 
+    #renewed
+    while len(queue) > 0:
+        st = queue.pop(0)
+        time.sleep(1)
+        HL52 = get52HL(st[0], 0)
+        newEntry = [st[0],st[1],getPrice(st[0],0),HL52[0],HL52[1]]
+        tempNames.append(st[0])
+        tempCSV.append(newEntry)
+        print tempCSV
+        mineNames([st[1],st[0]])
+##    for a in allRStocks:
+##        sName = str(a[3])
+##        sIndex = str(a[1])
+##        if "." not in sName and sName not in tempNames:
+##                time.sleep(1)
+##                HL52 = get52HL(sName,0)
+##                newEntry = [sName,sIndex,getPrice(sName,0),HL52[0],HL52[1]]
+##                tempNames.append(sName)
+##                tempCSV.append(newEntry)
+##                print tempCSV
+##                mineNames([sIndex,sName])
 
 '''
 Gets:current price for ONE stock
@@ -131,7 +158,7 @@ def getPrice(name,attempt):
 '''
 Gets: current 52 week low and hugh
 Todo:
-    - should be able to update multiple stocks to keep stocks updated
+- should be able to update multiple stocks to keep stocks updated
 '''
 def get52HL(name,attempt):
     try:
@@ -147,6 +174,7 @@ def get52HL(name,attempt):
 #print getPrice('LMT',0)
 mineNames()
 #mineNames(['SHA','900951'])
+#print queue
 
 
     
