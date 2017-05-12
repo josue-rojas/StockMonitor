@@ -50,8 +50,8 @@ monSlope1 = 'monSlope1'
 wkSlope1 = 'wkSlope1'
 daySlope3 = 'daySlope3'
 daySlope1 = 'daySlope1'
-#these are tempory list for testing
-tempNames=[]
+
+seen=[] #all stocks that have been seen meaning pass through its URL
 tempCSV = []
 queue = []
 
@@ -81,6 +81,10 @@ TODO: should be a csv rather than a regular txt, need to save index and stock na
 def initQueue(clear=False):
     if clear == False:
         queue = [line.rstrip('\n') for line in open('SavedStateQueue')]
+
+def initSeen(clear=False):
+    if clear == False:
+        return #read the csv and get the name column
 '''
 Todo: return in a better format
 this method returns a table sorted in whatever column you choose
@@ -92,49 +96,38 @@ def getSortBy(sortBy=name):
 
 
 '''
-this method scrapes names of google finance website.
+this method scrapes names of google finance website. adds to the queue to what should be searched
 for every stock there should be a related company which in theory similar to the
 friends all being connected all companies should be somehow related to the point
 you will see all of them.
 the seed is the starting point
-Gets (should be returned):[name, index, price, low52, high52, 
 '''
-def mineNames(seed=['NASDAQ','AAPL']):
-    url = 'https://www.google.com/finance?q='
+def mineNames(seed=['AAPL','NASDAQ']):
     if(2 == len(seed)):
-        url = url + seed[0] + '%3A' + seed[1]
+        url = 'https://www.google.com/finance?q=' + seed[1] + '%3A' + seed[0]
         print url
     else:
         return 'SEED NOT RIGHT LENGTH'
     r = requests.get(url).text
     #look for ticker:" 
-    allRStocks = re.findall('(ticker:")([\w|\d|\.|-]*)(:)([\w|\d|-|.]*)"',r)
-    queue.extend([str(line[3]), str(line[1])] for line in allRStocks if 'INDEX' not in str(line[1])
-                 and str(line[3]) not in tempNames
-                 and [str(line[3]), str(line[1])] not in queue) #nee to change tempNames to seen
-    print queue
-    print 
-    #renewed
-    while len(queue) > 0:
-        st = queue.pop(0)
-        time.sleep(1)
-        HL52 = get52HL(st[0], 0)
-        newEntry = [st[0],st[1],getPrice(st[0],0),HL52[0],HL52[1]]
-        tempNames.append(st[0])
-        tempCSV.append(newEntry)
-        print tempCSV
-        mineNames([st[1],st[0]])
-##    for a in allRStocks:
-##        sName = str(a[3])
-##        sIndex = str(a[1])
-##        if "." not in sName and sName not in tempNames:
-##                time.sleep(1)
-##                HL52 = get52HL(sName,0)
-##                newEntry = [sName,sIndex,getPrice(sName,0),HL52[0],HL52[1]]
-##                tempNames.append(sName)
-##                tempCSV.append(newEntry)
-##                print tempCSV
-##                mineNames([sIndex,sName])
+    relatedStocks = re.findall('(ticker:")([\w|\d|\.|-]*)(:)([\w|\d|-|.]*)"',r)
+    queue.extend([str(line[3]), str(line[1])] for line in relatedStocks
+                 if 'INDEX' not in str(line[1])
+                 and str(line[3]) not in seen
+                 and [str(line[3]), str(line[1])] not in queue)
+    seen.append(seed[1]) #seen means visited it's page and scraped the stocks names
+##    print queue
+##    print 
+##    #renewed
+##    while len(queue) > 0:
+##        st = queue.pop(0)
+##        time.sleep(1)
+##        HL52 = get52HL(st[0], 0)
+##        newEntry = [st[0],st[1],getPrice(st[0],0),HL52[0],HL52[1]]
+##        tempNames.append(st[0])
+##        tempCSV.append(newEntry)
+##        print tempCSV
+##        mineNames([st[1],st[0]])
 
 '''
 Gets:current price for ONE stock
@@ -169,10 +162,26 @@ def get52HL(name,attempt):
             return [0,0]
     except:
         return get52HL(name,attempt+1)
-            
-        
+
+'''
+Returns: newEntry[name,index,price,low52,high52,
+'''
+def newEntry(st):
+    HL52 = get52HL(st[0], 0)
+    return [st[0],st[1],getPrice(st[0],0),HL52[0],HL52[1]]
+
+def main():
+    #initialize everything HERE
+    mineNames()     #first stock init
+    while len(queue) > 0:
+        time.sleep(1)
+        st = queue.pop(0)
+        mineNames(st)
+        print newEntry(st) #should write to csv here
+
+main()
+    
 #print getPrice('LMT',0)
-mineNames()
 #mineNames(['SHA','900951'])
 #print queue
 
