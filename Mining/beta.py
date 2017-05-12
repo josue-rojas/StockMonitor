@@ -56,7 +56,6 @@ tempCSV = []
 queue = []
 
 
-
 '''
 there should be 14 columns which include
 all the things above 'column names in that order
@@ -102,7 +101,7 @@ friends all being connected all companies should be somehow related to the point
 you will see all of them.
 the seed is the starting point
 '''
-def mineNames(seed=['AAPL','NASDAQ']):
+def mineNames(seed=['AAPL','NASDAQ'],start=True):
     if(2 == len(seed)):
         url = 'https://www.google.com/finance?q=' + seed[1] + '%3A' + seed[0]
         print url
@@ -111,11 +110,14 @@ def mineNames(seed=['AAPL','NASDAQ']):
     r = requests.get(url).text
     #look for ticker:" 
     relatedStocks = re.findall('(ticker:")([\w|\d|\.|-]*)(:)([\w|\d|-|.]*)"',r)
-    queue.extend([str(line[3]), str(line[1])] for line in relatedStocks
-                 if 'INDEX' not in str(line[1])
-                 and str(line[3]) not in seen
-                 and [str(line[3]), str(line[1])] not in queue)
-    seen.append(seed[1]) #seen means visited it's page and scraped the stocks names
+    if not start:
+        seen.append(seed[0]) #seen means visited it's page and scraped the stocks names
+    queue.extend(
+        [str(line[3]), str(line[1])] for line in relatedStocks
+        if 'INDEX' not in str(line[1])
+        and [str(line[3]), str(line[1])] not in queue
+        and str(line[3]) not in seen)
+    #print seen
 ##    print queue
 ##    print 
 ##    #renewed
@@ -173,11 +175,13 @@ def newEntry(st):
 def main():
     #initialize everything HERE
     mineNames()     #first stock init
+    num = 0
     while len(queue) > 0:
         time.sleep(1)
         st = queue.pop(0)
-        mineNames(st)
-        print newEntry(st) #should write to csv here
+        print "#" + str(num) + " " + str(newEntry(st)) #should write to csv here
+        mineNames(st,start=False)
+        num+=1
 
 main()
     
