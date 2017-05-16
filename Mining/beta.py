@@ -7,20 +7,12 @@ Important Stuff:
 - http://stackoverflow.com/questions/17071871/select-rows-from-a-dataframe-based-on-values-in-a-column-in-pandas link for pandas select like from sql 
 
 TODO OVERALL:
-- ***Change mining to a queue so that way we dont ignore missed stocks when crshed, this means writing it on file
-    Also might not use threading since it is linear and not many things happening, unless....
-    - queue still using stack so we need to fix the crashing of to many stacks just restart the stacks
-        since we already should be saving it.
-- test after and pre market
-- fix regex for mineNames to ignore the '.' in the beginning thus ignoring basic index funds
-    but not the wieird ones like the chinese ones that are ust numbers just lik their stocks
+- add pre market and after martket? maybe but i do not think it is very important for long term trading
 - ADD THREADING TO AVOID COLLISION OR MISSING INTERSECTION AND TO ADD DATA THAT
     INVOLVES EQUATIONS AT THE SAME TIME
-- scrape data using threading to compute the slopes concurrently
 - Remove or filter stocks with no trading done or closed stocks
     or add a column of last traded date and time
-- add a seen list, when the program starts scrape the csv file to fill in what it already has
-- in the future add ability to start scraping from with the assumption that stocks can change rellation
+- in the future add ability to start scraping from with the assumption that stocks can change relation
 '''
 import csv
 import pandas as pd
@@ -29,6 +21,8 @@ import requests
 from googlefinance import getQuotes
 import time
 from yahoo_finance import Share #has delay (i think)
+import math
+from scipy import stats
 
 #names and constants
 #filename = 'ticks.csv'
@@ -109,27 +103,16 @@ def mineNames(seed=['AAPL','NASDAQ'],start=True):
         return 'SEED NOT RIGHT LENGTH'
     r = requests.get(url).text
     #look for ticker:" 
-    relatedStocks = re.findall('(ticker:")([\w|\d|\.|-]*)(:)([\w|\d|-|.]*)"',r)
+    relatedStocks = re.findall('(ticker:")([\w|\d|\.|-]*)(:)([\w|\d|-|\.]*)"',r)
     if not start:
         seen.append(seed[0]) #seen means visited it's page and scraped the stocks names
     queue.extend(
         [str(line[3]), str(line[1])] for line in relatedStocks
         if 'INDEX' not in str(line[1])
         and [str(line[3]), str(line[1])] not in queue
-        and str(line[3]) not in seen)
-    #print seen
-##    print queue
-##    print 
-##    #renewed
-##    while len(queue) > 0:
-##        st = queue.pop(0)
-##        time.sleep(1)
-##        HL52 = get52HL(st[0], 0)
-##        newEntry = [st[0],st[1],getPrice(st[0],0),HL52[0],HL52[1]]
-##        tempNames.append(st[0])
-##        tempCSV.append(newEntry)
-##        print tempCSV
-##        mineNames([st[1],st[0]])
+        and str(line[3]) not in seen
+        )
+
 
 '''
 Gets:current price for ONE stock
@@ -140,7 +123,7 @@ ToDO:
 def getPrice(name,attempt):
     try:
         if attempt == 0:
-            q = getQuotes(name)
+#            q = getQuotes(name)
             for a in getQuotes(name):
                 p = a['LastTradePrice']
                 return eval(p)
@@ -161,10 +144,61 @@ def get52HL(name,attempt):
             st = Share(name)
             return [st.get_year_low(), st.get_year_high()]
         else:
-            return [0,0]
+            return [0,0] #should return none
     except:
         return get52HL(name,attempt+1)
 
+'''
+Gets: Slope for the list of days listed....
+Note: should have list from greatest to lowest cause i do not want to waste on sorting
+    plus if we get the 'a' which is smaller than 'c' the biggest then in theory 'c' data(omega) has 'a' data (only 1 request)
+Info:https://www.quantshare.com/sa-426-6-ways-to-download-free-intraday-and-tick-data-for-the-us-stock-market
+TODO:
+- IMPORTANT max for minute interval is 15 days!!!! NEED TO FIND OTHER SOURCE EVEN IF THEY ARE CHOPPED
+    - need to find other source for data for more days in linear regression
+- looking into yahoo
+-  https://finance.yahoo.com/quote/YHOO/history?period1=1337054400&period2=1494820800&interval=1d&filter=history&frequency=1d
+- in the future add precheck if the stock is still trading before sending the request
+
+'''
+def getSlope(ticker,daysList=[1825,1095,365,183,92,31,7,3,1]):
+    #https://www.google.com/finance/getprices?i=[PERIOD]&p=[DAYS]d&f=d,o,h,l,c,v&df=cpct&q=[TICKER]
+    #in the url: d = date column, o = open, h = high, l = low, c = close, v = volume
+    prices = requests.get('https://www.google.com/finance/getprices?i=60&p='
+                 +str(daysList[0])
+                 +'d&f=d,c&df=cpct&q='
+                 +ticker).text.splitlines()
+    print str(daysList[0])
+    if len(prices) == 6: #no results
+        return [None,None,None,None,None,None,None,None]
+    slopes = []
+    total = len(prices) - 7 #seven lines are info
+    sumY = 0
+    sumX = 0
+    sumXY = 0
+    sumXSq = 0
+    end = False
+    days = 0 #count the days
+    for price in reversed(prices):
+        actPrice = price.split(",")
+        sumY+=eval(actPrice[1])
+        sumX+=1
+        sumXY+=(eval(actPrice[1])*sumX)
+        sumXSq+=math.pow(sumX,2)
+        if end: #Slope(b) = (N*Sum(XY) - (Sum(X))(Sum(Y))) / (N*Sum(X)sq - (sum(X))sq)
+            top = ((sumX+1)*sumXY) - (sumX*sumY)
+            bottom = ((sumX+1)*sumXSq) - (math.pow(sumX,2))
+            slopes.append(top/bottom)
+            end=False
+        if '1' == (str(actPrice[0])): #should change this!??!?!
+            #assume next one is the last of the day
+            days+=1
+            if days in daysList:
+                end=True
+            print actPrice
+        if sumX == total:
+            return slopes
+        
 '''
 Returns: newEntry[name,index,price,low52,high52,
 '''
@@ -183,8 +217,9 @@ def main():
         mineNames(st,start=False)
         num+=1
 
-main()
-    
+#main()
+
+print getSlope('AAPL')
 #print getPrice('LMT',0)
 #mineNames(['SHA','900951'])
 #print queue
