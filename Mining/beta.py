@@ -144,7 +144,7 @@ def get52HL(name,attempt):
             st = Share(name)
             return [st.get_year_low(), st.get_year_high()]
         else:
-            return [0,0] #should return none
+            return [None,None]
     except:
         return get52HL(name,attempt+1)
 
@@ -217,9 +217,9 @@ def main():
         mineNames(st,start=False)
         num+=1
 
-#main()
+main()
 
-print getSlope('AAPL')
+#print getSlope('AAPL')
 #print getPrice('LMT',0)
 #mineNames(['SHA','900951'])
 #print queue
