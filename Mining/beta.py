@@ -167,8 +167,7 @@ def getSlope(ticker,daysList=[1825,1095,365,183,92,31,7,3,1]):
     prices = requests.get('https://www.google.com/finance/getprices?i=60&p='
                  +str(daysList[0])
                  +'d&f=d,c&df=cpct&q='
-                 +ticker).text.splitlines()
-    print str(daysList[0])
+                 +ticker[0]).text.splitlines()
     if len(prices) == 6: #no results
         return [None,None,None,None,None,None,None,None]
     slopes = []
@@ -195,16 +194,21 @@ def getSlope(ticker,daysList=[1825,1095,365,183,92,31,7,3,1]):
             days+=1
             if days in daysList:
                 end=True
-            print actPrice
-        if sumX == total:
+        if sumX == total and len(slopes) > 0:
+            slopes.reverse()
             return slopes
+        elif sumX == total and len(slopes) == 0:
+            print "NONE IN"
+            return [None,None,None,None,None,None,None,None,None]
         
 '''
 Returns: newEntry[name,index,price,low52,high52,
 '''
 def newEntry(st):
     HL52 = get52HL(st[0], 0)
-    return [st[0],st[1],getPrice(st[0],0),HL52[0],HL52[1]]
+    newEnt = [st[0],st[1],getPrice(st[0],0),HL52[0],HL52[1]]
+    newEnt.extend(getSlope(st))
+    return newEnt
 
 def main():
     #initialize everything HERE
@@ -220,6 +224,7 @@ def main():
 main()
 
 #print getSlope('AAPL')
+
 #print getPrice('LMT',0)
 #mineNames(['SHA','900951'])
 #print queue
