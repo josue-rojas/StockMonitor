@@ -7,6 +7,7 @@ Important Stuff:
 - http://stackoverflow.com/questions/17071871/select-rows-from-a-dataframe-based-on-values-in-a-column-in-pandas link for pandas select like from sql 
 
 TODO OVERALL:
+- SAVE DATA TO FILES
 - add pre market and after martket? maybe but i do not think it is very important for long term trading
 - ADD THREADING TO AVOID COLLISION OR MISSING INTERSECTION AND TO ADD DATA THAT
     INVOLVES EQUATIONS AT THE SAME TIME
@@ -27,26 +28,25 @@ from scipy import stats
 #names and constants
 #filename = 'ticks.csv'
 filename = 'test.csv' #test file used for testing.....
-numColumn = 14
+numColumn = 8
 
-#column names
+#column names #should make this a dictionary to stop manualing counting numColummn
 name = 'name'
 index = 'index'
 price = 'price'
 low52 = ' low52'
 high52 = 'high52'
-yrSlope5 = 'yrSlope5'
-yrSlope3 = 'yrSlope3'
-yrSlope1 = 'yrSlope1'
-monSlope6 = 'monSlope6'
-monSlope3 = 'monSlope3'
-monSlope1 = 'monSlope1'
+#yrSlope5 = 'yrSlope5'
+#yrSlope3 = 'yrSlope3'
+#yrSlope1 = 'yrSlope1'
+#monSlope6 = 'monSlope6'
+#monSlope3 = 'monSlope3'
+#monSlope1 = 'monSlope1'
 wkSlope1 = 'wkSlope1'
 daySlope3 = 'daySlope3'
 daySlope1 = 'daySlope1'
 
 seen=[] #all stocks that have been seen meaning pass through its URL
-tempCSV = []
 queue = []
 
 
@@ -134,7 +134,7 @@ def getPrice(name,attempt):
     except:
         return getPrice(name,attempt+1)   #need to move this to a try and catch later
 '''
-Gets: current 52 week low and hugh
+Gets: current 52 week low and high
 Todo:
 - should be able to update multiple stocks to keep stocks updated
 '''
@@ -162,32 +162,29 @@ TODO:
 
 '''
 def getSlope(ticker,daysList=[1825,1095,365,183,92,31,7,3,1]):
-    #https://www.google.com/finance/getprices?i=[PERIOD]&p=[DAYS]d&f=d,o,h,l,c,v&df=cpct&q=[TICKER]
+       #https://www.google.com/finance/getprices?i=[PERIOD]&p=[DAYS]d&f=d,o,h,l,c,v&df=cpct&q=[TICKER]
     #in the url: d = date column, o = open, h = high, l = low, c = close, v = volume
     prices = requests.get('https://www.google.com/finance/getprices?i=60&p='
                  +str(daysList[0])
                  +'d&f=d,c&df=cpct&q='
                  +ticker[0]).text.splitlines()
+    print ticker
+    print ticker[0]
     if len(prices) == 6: #no results
-        return [None,None,None,None,None,None,None,None]
+        return [None,None,None]
     slopes = []
     total = len(prices) - 7 #seven lines are info
-    sumY = 0
     sumX = 0
-    sumXY = 0
-    sumXSq = 0
     end = False
     days = 0 #count the days
+    Aprice = []
     for price in reversed(prices):
         actPrice = price.split(",")
-        sumY+=eval(actPrice[1])
+        Aprice.append(eval(price.split(",")[1]))
         sumX+=1
-        sumXY+=(eval(actPrice[1])*sumX)
-        sumXSq+=math.pow(sumX,2)
-        if end: #Slope(b) = (N*Sum(XY) - (Sum(X))(Sum(Y))) / (N*Sum(X)sq - (sum(X))sq)
-            top = ((sumX+1)*sumXY) - (sumX*sumY)
-            bottom = ((sumX+1)*sumXSq) - (math.pow(sumX,2))
-            slopes.append(top/bottom)
+        if end:
+            xAxis = [x for x in range(sumX)]
+            slopes.append(stats.linregress(xAxis,Aprice)[0])
             end=False
         if '1' == (str(actPrice[0])): #should change this!??!?!
             #assume next one is the last of the day
@@ -195,11 +192,10 @@ def getSlope(ticker,daysList=[1825,1095,365,183,92,31,7,3,1]):
             if days in daysList:
                 end=True
         if sumX == total and len(slopes) > 0:
-            slopes.reverse()
             return slopes
         elif sumX == total and len(slopes) == 0:
-            print "NONE IN"
-            return [None,None,None,None,None,None,None,None,None]
+            return [None, None, None]
+            #return [None,None,None,None,None,None,None,None,None] #for now doesnt need that many iten
         
 '''
 Returns: newEntry[name,index,price,low52,high52,
@@ -221,9 +217,8 @@ def main():
         mineNames(st,start=False)
         num+=1
 
-main()
-
-#print getSlope('AAPL')
+main() #need to fix cause removed reveresed slope so need to reverese slope on csv
+#print getSlope(['AAPL','NASDAQ'])
 
 #print getPrice('LMT',0)
 #mineNames(['SHA','900951'])
